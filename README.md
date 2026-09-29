@@ -98,7 +98,23 @@ Es el punto de entrada del programa, permite poder compilar y ejecutar el proyec
 
 - Llama a `ring_init()` para arrancar el nodo.
 
-- Muestra el menú de operaciones y, en un bucle, lee la opción del usuario y llama a la función correspondiente de la API.
+- Muestra el menú de operaciones y, en un bucle, lee la opción del usuario y llama a la función correspondiente de la API. Las opciones del menú son:
+
+  - `I`: Info del nodo local
+
+  - `P`: PID de un nodo remoto
+
+  - `S`: Sucesor local
+
+  - `R`: Sucesor de un nodo remoto
+
+  - `U`: Sucesor del sucesor de un nodo remoto
+
+  - `D`: Descarga directa de un fichero
+
+  - `L`: Búsqueda en el anillo
+
+  - `G`: Buscar y descargar
 
 - Convierte los resultados de formato de red a formato de host (`ntohs()`, `inet_ntoa()`) para imprimirlos.
 
@@ -174,7 +190,17 @@ Compila `main.c`, `ring_cln.c`, `ring_srv.c` y `common.c`, genera los `.o` corre
 
 ### Funcionamiento
 
-Las operaciones se identifican mediante un **código de operación** de un
+El funcionamiento del sistema se puede dividir en tres capas que actúan en cadena cada vez que el usuario realiza una operación:
+
+1. **Interfaz de usuario (`main.c`).** El usuario arranca la aplicación, se crea la red (o el nodo se une a una existente) y aparece el menú de operaciones. El usuario elige una tecla (`I`, `P`, `S`, `R`, `U`, `D`, `L`, `G`) y `main.c` traduce esa tecla a una llamada a la función correspondiente de la API (`ring.h`).
+
+> Para saber cómo arrancar la red o conectar un nuevo nodo y ejecutar las operaciones del sistema, consultar [Instalación y ejecución](#instalación-y-ejecución).
+
+2. **Capa cliente (`ring_cln.c`).** La función invocada prepara la operación: si es local (`I`, `S`), devuelve directamente la información del estado del nodo sin usar la red; si es remota (`P`, `R`, `U`, `D`, `L`, `G`), abre una conexión TCP con el nodo destino mediante `create_socket_cln()` (`common.c`), envía el código de operación junto con sus parámetros y espera la respuesta.
+
+3. **Capa servidor (`ring_srv.c`).** Al otro lado, el thread servidor (`server_thread()`) acepta la conexión y lanza un thread `request_handler()` que lee el código de operación, ejecuta la lógica correspondiente y envía la respuesta. Si la operación requiere recorrer el anillo, el propio servidor actúa también como cliente conectándose a su sucesor, encadenando así la petición por el anillo hasta que se resuelve. 
+
+Las operaciones que intercambian `ring_cln.c` y `ring_srv.c` se identifican mediante un **código de operación** de un
 carácter. La siguiente tabla resume las operaciones soportadas por el
 servidor:
 
@@ -262,6 +288,11 @@ A continuación se detallan estas operaciones indicando funciones y archivos inv
 │   ├── main.c             # Interfaz de usuario (menú de texto)
 │   ├── ring_cln.c         # Parte cliente de la aplicación
 │   └── ring_srv.c         # Parte servidor de la aplicación
-│ 
-└──  README.md             # Descripción del proyecto 
+│
+├── INSTRUCTIONS.md        # Instrucciones de instalación y ejecución del proyecto
+└── README.md              # Descripción del proyecto 
 ```
+
+## Instalación y ejecución
+
+Ver [INSTRUCTIONS.md](INSTRUCTIONS.md)
