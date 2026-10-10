@@ -1,0 +1,9 @@
+*.o
+ring
+.git/
+.gitignore
+.idea/
+*.iml
+*.log
+INSTRUCTIONS.md
+README.md
