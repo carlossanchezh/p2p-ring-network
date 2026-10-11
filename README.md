@@ -273,6 +273,13 @@ A continuación se detallan estas operaciones indicando funciones y archivos inv
 
 - Lenguaje: **C**
 - Comunicación entre nodos: **Sockets TCP**
+- Despliegue: **Docker**
+
+## Imagen del sistema
+
+La imagen del sistema ([carlossanchezh/p2p-ring-network](https://hub.docker.com/r/carlossanchezh/p2p-ring-network)) está publicada en Docker Hub.
+
+Consulta la sección de [Instalación y ejecución](#instalación-y-ejecución) para más detalles sobre el despliegue con Docker.
 
 ## Estructura del proyecto
 
@@ -289,10 +296,15 @@ A continuación se detallan estas operaciones indicando funciones y archivos inv
 │   ├── ring_cln.c         # Parte cliente de la aplicación
 │   └── ring_srv.c         # Parte servidor de la aplicación
 │
+├── .dockerignore          # Archivos y carpetas excluidos del contexto de Docker
+├── .gitignore             # Archivos y carpetas ignorados por Git
+├── Dockerfile             # Imagen Docker 
 ├── INSTRUCTIONS.md        # Instrucciones de instalación y ejecución del proyecto
 └── README.md              # Descripción del proyecto 
 ```
 
 ## Instalación y ejecución
 
-Ver [INSTRUCTIONS.md](INSTRUCTIONS.md)
+El proyecto puede ejecutarse de dos formas, de manera **Local** o utilizando **Docker**.
+
+Consulta [INSTRUCTIONS.md](INSTRUCTIONS.md) para las instrucciones detalladas de instalación, ejecución y uso de las operaciones del sistema.
