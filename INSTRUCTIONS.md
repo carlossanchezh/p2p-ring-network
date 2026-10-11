@@ -1,10 +1,18 @@
 # Instrucciones de instalación y ejecución
 
-## Requisitos
+Este proyecto puede ejecutarse de dos formas: **en local** (con los requisitos necesarios instalados en tu máquina) o **con Docker** (sin necesidad de instalar nada más que Docker Desktop).
+
+- Para la **ejecución local**, sigue las secciones [Requisitos local](#requisitos-local), [Instalación para ejecución local](#instalación-para-ejecución-local) y [Ejecución local de la Red](#ejecución-local-de-la-red).
+
+- Para la **ejecución con Docker**, sigue las secciones [Requisitos con Docker](#requisitos-con-docker), [Instalación para ejecución con Docker](#instalación-para-ejecución-con-docker) y [Ejecución con Docker de la Red](#ejecución-con-docker-de-la-red).
+
+- Para **conocer las operaciones y su uso**, consulta las secciones [Ejecución de las operaciones del sistema](#ejecución-de-las-operaciones-del-sistema) y los [Ejemplos de uso](#ejemplos-de-uso).
+
+## Requisitos local
 
 - **Linux**, **MacOS** o **WSL** (Windows Subsystem for Linux)
 
-## Instalación
+## Instalación para ejecución local
 
 ### 1. Clonar el repositorio
 
@@ -22,7 +30,7 @@ git clone https://github.com/carlossanchezh/p2p-ring-network.git
 | `make` | Sistema de compilación | `make --version` |
 | `pthread` | Librería de threads (viene con glibc) | — |
 
-## Ejecución de la Red
+## Ejecución local de la Red
 
 ### 1. Compilar 
 
@@ -82,7 +90,7 @@ Un nodo que quiere unirse a una red existente necesita, además de su directorio
 mkdir <shared_dir>
 ```
 
-> Este `<shared_dir>` es diferente al del nodo inicial se creará otro, por ejemplo, `dir2`
+> Este `<shared_dir>` es diferente al del nodo inicial; se creará otro, por ejemplo, `dir2`
 
 2. Ejecutar el nodo adicional:
 
@@ -93,11 +101,102 @@ mkdir <shared_dir>
 3. La salida esperada será: 
 
 ```plaintext
+Bienvenido a la red P2P RING
+----------------------------
 El equipo <hostname> con IP <ip> y puerto <puerto> (PID <pid>) se incorpora a la red
 a través del equipo <remote_ip> puerto <remote_port>
+    
+Seleccione operación (...)
 ```
 
 > Siguiendo estas instrucciones se pueden ejecutar cuantos nodos se requieran para la red.
+
+## Requisitos con Docker
+
+- **Docker Desktop**
+
+## Instalación para ejecución con Docker
+
+La imagen del sistema ([carlossanchezh/p2p-ring-network](https://hub.docker.com/r/carlossanchezh/p2p-ring-network)) está publicada en Docker Hub, por lo que **no es necesario clonar el repositorio** ni construir nada. Basta con descargar la imagen:
+
+```bash
+docker pull carlossanchezh/p2p-ring-network:latest
+```
+
+Si prefieres construir la imagen en lugar de descargarla de Docker Hub, deberás clonar el repositorio:
+
+```bash
+git clone https://github.com/carlossanchezh/p2p-ring-network
+```
+
+> Si no usas Git, descarga el `.zip` del proyecto y descomprímelo en una carpeta local.
+
+Una vez clonado el repositorio tendrás que construir la imagen a partir del `Dockerfile` del proyecto:
+
+```bash
+docker build -t carlossanchezh/p2p-ring-network:latest .
+```
+
+## Ejecución con Docker de la Red
+
+### 1. Creación de la red:
+
+Lo primero será crear la red 
+
+```bash
+docker network create ring-net
+```
+
+Esta red permite que los contenedores se vean entre sí por nombre (node1, node2, ...) además de por IP.
+
+> `ring-net` es un ejemplo de nombre para la red se puede usar cualquiera
+ 
+### 2. Levantar el primer contenedor (nodo) de la red
+
+A partir de la imagen descargada/construida previamente en la instalación:
+
+```bash
+docker run -it --rm --name node1 --network ring-net carlossanchezh/p2p-ring-network:latest bash -c "mkdir -p /tmp/dir1 && exec ./ring /tmp/dir1"
+```
+> `node1` es un ejemplo de nombre para el contenedor se puede usar cualquiera
+>
+> `dir1` es un ejemplo de nombre para el directorio compartido se puede usar cualquiera
+
+> El directorio compartido se crea dentro del contenedor (no se usan volúmenes), por lo que al cerrar el contenedor su contenido se pierde. 
+
+La salida esperada será:
+
+```plaintext
+Bienvenido a la red P2P RING
+----------------------------
+El equipo <hostname> con IP <ip> y puerto <puerto> (PID <pid>) es el primer nodo de una nueva red
+
+Seleccione operación (...)
+```
+
+Apunta el puerto `<puerto>` que aparece en el mensaje. Lo necesitarás para que los demás nodos se unan a la red.
+
+### 3. Levantar un segundo contenedor (nodo) de la red
+
+En otra terminal distinta, con el puerto del nodo de contacto (<remote_port>) apuntado previamente:
+
+```bash
+docker run -it --rm --name node2 --network ring-net carlossanchezh/p2p-ring-network:latest bash -c "mkdir -p /tmp/dir2 && exec ./ring /tmp/dir2 node1 <remote_port>"
+```
+
+La salida esperada será:
+
+```plaintext
+Bienvenido a la red P2P RING
+----------------------------
+El equipo <hostname> con IP <ip> y puerto <puerto> (PID <pid>) se incorpora a la red
+a través del equipo <remote_ip> puerto <remote_port>
+
+Seleccione operación (...)
+```
+> Siguiendo estas instrucciones se pueden ejecutar cuantos nodos se requieran para la red.
+
+> Recuerda ejecutar cada nodo en una terminal distinta.
 
 ## Ejecución de las operaciones del sistema
 
